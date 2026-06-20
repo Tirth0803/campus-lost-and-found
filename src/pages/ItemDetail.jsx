@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { CATEGORIES } from '../utils/constants';
 import toast from 'react-hot-toast';
 import { MapPin, Calendar, User, Mail, Phone, ArrowLeft, Loader2, Tag } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 const fmt = (ts) => {
   if (!ts) return '';
@@ -41,8 +42,23 @@ export default function ItemDetail() {
     setClaiming(true);
     try {
       await createClaim(id, user.uid, claimMsg);
+
+      await emailjs.send(
+        'service_wo0ig9n',
+        'template_4byofx8',
+        {
+          to_name: item.contactName || 'there',
+          to_email: item.contactEmail,
+          from_name: user.displayName || user.email,
+          from_email: user.email,
+          item_title: item.title,
+          claim_message: claimMsg,
+        },
+        'pxSXSdrkLttEyKXDS'
+      );
+
       setHasClaimed(true);
-      toast.success('Claim submitted! The reporter will be notified.');
+      toast.success('Claim submitted! The owner has been notified by email.');
     } catch {
       toast.error('Failed to submit claim');
     } finally {
@@ -142,7 +158,7 @@ export default function ItemDetail() {
             <div className="card p-4 space-y-3">
               <p className="text-sm font-medium text-ink-700">Is this yours?</p>
               {hasClaimed ? (
-                <p className="text-sm text-green-600">✓ Claim submitted. The finder will reach out.</p>
+                <p className="text-sm text-green-600">✓ Claim submitted. The owner has been notified by email.</p>
               ) : (
                 <>
                   <textarea
